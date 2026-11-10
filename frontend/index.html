@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Space Explorer</title>
+</head>
+<body>
+<div id="app">
+    <header>
+        <div id="volumes"></div>
+        <div class="actions">
+            <button id="rescan" title="Re-read the selected folder" disabled>Rescan</button>
+            <button id="reveal" title="Show the selected item in the file manager" disabled>Reveal</button>
+            <button id="pick">Choose folder...</button>
+            <button id="cancel" hidden>Cancel</button>
+        </div>
+    </header>
+    <div class="columns">
+        <button class="cell name sortable" data-sort="name" title="Sort by name">Name</button>
+        <button class="cell size sortable" data-sort="size" title="Sort by size">Size</button>
+        <div class="cell percent">%</div>
+        <div class="cell bar">Share of selected root</div>
+    </div>
+    <main id="tree"></main>
+    <section id="errors-panel" hidden>
+        <div class="errors-head">
+            <strong id="errors-title"></strong>
+            <button id="errors-close" title="Close">&times;</button>
+        </div>
+        <p id="errors-note"></p>
+        <ul id="errors-list"></ul>
+    </section>
+    <footer>
+        <span id="status"></span>
+        <button id="errors-btn" hidden></button>
+    </footer>
+</div>
+<script src="./src/main.js" type="module"></script>
+</body>
+</html>

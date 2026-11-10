@@ -1,0 +1,53 @@
+@import './tree.css';
+@import './panels.css';
+
+:root {
+    --bg: #1b2636;
+    --panel: #223046;
+    --line: #2f4260;
+    --text: #e6edf3;
+    --muted: #8da2bd;
+    --accent: #4c8dff;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; }
+body {
+    font: 13px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    user-select: none;
+    -webkit-user-select: none;
+}
+#app { display: flex; flex-direction: column; height: 100vh; }
+
+header {
+    display: flex; gap: 12px; align-items: flex-start; justify-content: space-between;
+    padding: 12px 16px; background: var(--panel); border-bottom: 1px solid var(--line);
+}
+#volumes { display: flex; flex-wrap: wrap; gap: 8px; }
+.actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+button {
+    font: inherit; color: var(--text); background: #2a3c58; border: 1px solid var(--line);
+    border-radius: 6px; padding: 6px 12px; cursor: pointer;
+}
+button:hover:not(:disabled) { background: #34507a; }
+button:disabled { opacity: .5; cursor: default; }
+button[hidden] { display: none; }
+#pick { background: var(--accent); border-color: var(--accent); color: #fff; }
+#pick:hover:not(:disabled) { background: #6aa0ff; }
+
+.volume { display: flex; flex-direction: column; gap: 4px; min-width: 170px; text-align: left; }
+.v-name { font-weight: 600; }
+.v-info { color: var(--muted); font-size: 11px; }
+.v-bar { display: block; height: 5px; border-radius: 3px; background: #14202f; overflow: hidden; }
+.v-bar .fill { display: block; height: 100%; }
+
+footer {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 6px 16px; background: var(--panel); border-top: 1px solid var(--line);
+    color: var(--muted); min-height: 36px;
+}
+#status.busy { color: var(--text); }
+#status.error { color: #ff7b72; }

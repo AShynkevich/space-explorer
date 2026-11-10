@@ -1,0 +1,19 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "lsp": {
+    "gopls": {
+      "command": ["/Users/Aliaksandr_Shynkevich/DEV/GO/workspace/bin/gopls"],
+      "extensions": [".go"],
+      "env": {
+        "PATH": "/Users/Aliaksandr_Shynkevich/DEV/GO/go/bin:/Users/Aliaksandr_Shynkevich/DEV/GO/workspace/bin:/usr/local/bin:/usr/bin:/bin"
+      }
+    },
+    "typescript": {
+      "command": ["/Users/Aliaksandr_Shynkevich/.nvm/versions/node/v24.15.0/bin/typescript-language-server", "--stdio"],
+      "extensions": [".js", ".mjs", ".cjs", ".ts"],
+      "env": {
+        "PATH": "/Users/Aliaksandr_Shynkevich/.nvm/versions/node/v24.15.0/bin:/usr/local/bin:/usr/bin:/bin"
+      }
+    }
+  }
+}
