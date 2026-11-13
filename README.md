@@ -24,15 +24,32 @@ Sizes are allocated disk space (like `du`), symlinks are never followed and hard
 counted once. Each folder lists its 200 largest entries plus an "N other items" row; files
 under 1 MB are folded into that row.
 
+## Terminal version
+
+`space-explorer-tui [folder]` runs the same scanner in a terminal (SSH sessions, servers
+without a desktop). Arrow keys or `j`/`k` move, Right/Left (or `l`/`h`) expand and collapse,
+`s` sorts, `r` rescans the selected folder, `o` reveals it, `e` lists unreadable paths,
+`b` switches between the disk list and the tree, `q` quits.
+
+To pick a folder interactively (like Midnight Commander or Far), press `f` on the disk list: Enter or Right
+opens a folder, Backspace or Left goes up, Space scans the highlighted folder, `c` scans the folder you are
+in, `~` jumps home and `/` lets you type a path.
+
 ## Building
 
 Requirements: Go, Node.js, and the [Wails v2 CLI](https://wails.io/docs/gettingstarted/installation)
 (`go install github.com/wailsapp/wails/v2/cmd/wails@latest`).
 
 ```
-wails dev        # live-reload development
-wails build      # release build into build/bin
+wails dev                          # live-reload development
+wails build                        # release build into build/bin
+scripts/build.sh                   # this OS + Windows, collected per platform
+scripts/build.sh linux/amd64       # explicit targets (os/arch)
 ```
+
+`scripts/build.sh` puts the app and the `scantool` CLI into `build/bin/<os>-<arch>/`
+(e.g. `build/bin/darwin-arm64/space-explorer.app`) plus `space-explorer-tui`. A GUI that the current host cannot
+build (Linux from macOS) is skipped with a warning; `scantool` is still built.
 
 | Platform | Notes |
 |---|---|

@@ -51,6 +51,7 @@ go test -race ./...              # unit tests
 go vet ./... && gofmt -l .       # must print nothing
 (cd frontend && npm test)        # JS unit tests (node:test + jsdom)
 wails build                      # -> build/bin/space-explorer.app (needs frontend/dist/gitkeep to exist)
+scripts/build.sh [os/arch ...]   # GUI + scantool -> build/bin/<os>-<arch>/ (default: this host + windows/amd64)
 wails dev                        # live-reload dev mode
 go build -o /tmp/scantool ./cmd/scantool && /tmp/scantool -depth 2 <folder>   # CLI scanner, prints tree + memory
 ```
@@ -68,7 +69,7 @@ Check line limit: `find . -name '*.go' -not -path './frontend/*' | xargs wc -l |
 
 ## Structure
 Code lives in small sub-packages under `internal/`, one responsibility each. Dependencies point one way:
-`tree`, `platform` (leaves) <- `scanner`, `volumes`, `reveal` <- `session` <- root `package main`.
+`tree`, `platform`, `browse` (leaves) <- `scanner`, `volumes`, `reveal` <- `session` <- root `package main` (Wails) and `tui` (terminal).
 ```
 main.go, app.go            Wails entry (GC memory limit 256 MB) + bound App: thin delegates to internal/*
 frontend/index.html        static layout: header (volumes + actions), column header, #tree, #status
@@ -104,11 +105,20 @@ internal/scanner/          scan engine
 internal/volumes/          disks to pick from: Volume{Name,Path,Total,Free}, List()
   volumes.go               List (system volume first); list_darwin/linux/windows.go, space_unix/other.go; mounts.go parses /proc/mounts
 internal/reveal/           Show(path): open in Finder (`open -R`) / Explorer (`/select,`) / xdg-open; command_*.go per OS
+internal/browse/           List(dir) sub-folders (symlinked dirs marked, broken links skipped), Parent(dir); used by the TUI folder picker
 internal/session/          scan lifecycle for the UI, no Wails dependency (events via injected emit func)
   manager.go               Manager: Start (cancels previous), Cancel, Running, Errors; scan() + finish() shared with rescan
   rescan.go                Rescan(path): scan one folder, graft into the tree (tree.Replace), merge errors
   events.go                event names, Summary, throttled progress pump (250 ms)
   view.go                  Children(path, sort) -> Listing{Entries}: top 200 rows (size or name order) + synthetic "N other items" row, Percent of root
+internal/tui/              terminal UI (Bubble Tea + lipgloss, MIT) over the same session.Manager; no scan logic
+  backend.go, bridge.go    Backend interface (faked in tests); Bridge turns session events into tea messages
+  model.go, events.go      Model state, Update, scan lifecycle; events.go handles done/cancelled/failed
+  keys.go, screens_keys.go, actions.go   key handling per screen (tree, disks, path prompt, errors); rescan/reveal/back
+  browser.go, browser_view.go   Midnight-Commander-style folder picker (modeBrowse) over internal/browse
+  rows.go                  flat row list: expand inserts, collapse removes deeper rows, refresh restores expanded state
+  view.go, treeview.go, style.go, format.go   rendering (header/body/status/footer, bars, green->red ramp), size formatting
+cmd/space-explorer-tui/    TUI entry point: `space-explorer-tui [folder]`
 cmd/scantool/              dev CLI to validate against `du` and measure memory
 build/                     Wails platform assets (icons, plist, NSIS); build/bin is output
 ```
@@ -160,6 +170,12 @@ Measured (M4 Pro, SSD): home 200 GB / 1.4M files -> 16.6 s, 22.6k nodes, 20 MB R
 - Cross-compile: `go build ./internal/... ./cmd/...` OK for windows/{amd64,arm64}, linux/{amd64,arm64}, darwin/amd64; root package builds for windows and vets for linux. `wails build -platform windows/amd64 -o space-explorer.exe` works from macOS (output in `build/bin`, git-ignored). Linux GUI build needs GTK3/WebKitGTK on a Linux host.
 - `vite build` / `npm run build` deletes `frontend/dist/gitkeep`; `touch frontend/dist/gitkeep` before `wails build`.
 - README.md is user-facing (usage, build per platform, measurements).
+
+## Terminal UI
+- Same features as the GUI: disk list, folder browser (`f` on a disk: Enter/Right open, Backspace/Left up, Space scan highlighted folder, `c` scan current folder, `~` home, `/` path prompt prefilled with the current folder, Esc/`v` back to disks; cancelling a scan started here returns to the browser), path prompt (`/`, `~` = home, `h` = home), live scan progress, lazy tree with colored bars, sort (`s`), rescan folder (`r`; root = full scan, Esc cancels), reveal (`o`), unreadable panel (`e`), `b` toggles disks/tree, `q`/Ctrl+C quits (cancels a scan).
+- Library choice: Bubble Tea v1 + lipgloss (MIT) for least UI effort; adds ~8 small deps. Binary is separate (`cmd/space-explorer-tui`), the Wails GUI does not import it.
+- Tests drive `Model.Update` with a fake `Backend`; no real terminal needed. Narrow terminals drop the bar first, then truncate.
+- Not yet checked: Windows terminals, light backgrounds, wide (CJK) names.
 
 ## Known notes
 - `wails build` warns about macOS 11 vs 13 linker versions: harmless.
